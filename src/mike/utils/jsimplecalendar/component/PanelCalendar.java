@@ -6,9 +6,11 @@ import java.awt.event.ActionListener;
 import java.util.Calendar;
 import java.util.Date;
 import javax.swing.*;
-import mike.utils.DateUtil;
+import javax.swing.border.Border;
 import mike.utils.jsimplecalendar.event.SelectionChangedEvent;
 import mike.utils.jsimplecalendar.event.SelectionChangedListener;
+import mike.utils.jsimplecalendar.event.DateChangedEvent;
+import mike.utils.jsimplecalendar.event.DateChangedListener;
 
 public class PanelCalendar extends JPanel {
 
@@ -20,6 +22,7 @@ public class PanelCalendar extends JPanel {
     protected Font fontCalendar;
     protected Dimension dimensionCalendar;
     protected Calendar dateSelected;
+    protected int[] days;
     
     protected Calendar calendar;
     
@@ -27,6 +30,7 @@ public class PanelCalendar extends JPanel {
     private JLabel[] daysName;
     private JPanel panelCalendar;
     private ButtonGroup groupCalendar;
+    private Border borderButton;
     
     private int totaldays = 42;
     
@@ -62,7 +66,7 @@ public class PanelCalendar extends JPanel {
         //Init jlabels
         for (int i = 0; i < 7; i++) {
             daysName[i] = new JLabel();
-            daysName[i].setFont(new java.awt.Font("Dialog", 0, 11));
+            daysName[i].setFont(new java.awt.Font("Dialog", 1, 11));
             daysName[i].setHorizontalAlignment(JLabel.CENTER);
         }
         //Init jbuttons
@@ -72,8 +76,10 @@ public class PanelCalendar extends JPanel {
             daysButtons[i].setMargin(new Insets(0, 0, 0, 0));
             daysButtons[i].setPreferredSize(dimensionCalendar);
             daysButtons[i].addActionListener(actionButton());
+//            System.out.println(daysButtons[i].getBorder());
             groupCalendar.add(daysButtons[i]);
         }
+        borderButton = daysButtons[0].getBorder();
         panelCalendar = new JPanel();
         panelCalendar.setLayout(new GridLayout(7, 6));
         drawDays();
@@ -108,6 +114,15 @@ public class PanelCalendar extends JPanel {
         // de ese dia este este seleccionado
         this.dateSelected.setTime(dateSelected);
         calendar.setTime(dateSelected);
+        this.days = null;
+        drawDays();
+    }
+    public void setDateSelected(Date dateSelected, int[] days) {
+        //TODO hacer que al cambiar el dateselected se actualiza el calendario y el boton
+        // de ese dia este este seleccionado
+        this.dateSelected.setTime(dateSelected);
+        calendar.setTime(dateSelected);
+        this.days = days;
         drawDays();
     }
     //</editor-fold>
@@ -125,11 +140,46 @@ public class PanelCalendar extends JPanel {
             listener.onSelectionChanged(evt);
     }
     //</editor-fold>
+    //<editor-fold defaultstate="collapsed" desc="DATE CHANGED LISTENER">
+    public void addDateChangedListener(DateChangedListener listener) {
+        listenerList.add(DateChangedListener.class, listener);
+    }
+    public void removeDateChangedListener(DateChangedListener listener) {
+        listenerList.remove(DateChangedListener.class, listener);
+    }
+    public void fireDateChange(int button) {
+        DateChangedEvent evt = new DateChangedEvent(this);
+        DateChangedListener[] listeners = listenerList.getListeners(DateChangedListener.class);
+        for (DateChangedListener listener : listeners) {
+            switch(button) {
+                case 0: listener.nextMonthChanged(evt);break;
+                case 1: listener.nextYearChanged(evt);break;
+                case 2: listener.prevMonthChanged(evt);break;
+                case 3: listener.prevYearChanged(evt);break;
+            }
+        }
+    }
+    //</editor-fold>
+    
+    //<editor-fold defaultstate="collapsed" desc="SET DAYS SELECTED">
+    public void setDaysSelected(int[] days) {
+        this.days = days;
+    }
+    //</editor-fold>
     
     //<editor-fold defaultstate="collapsed" desc="CALENDAR">
     public void setCalendar(Calendar calendar) {
         this.calendar = calendar;
+        this.days = null;
         drawDays();
+    }
+    public void setCalendar(Calendar calendar, int[] days) {
+        this.calendar = calendar;
+        this.days = days;
+        drawDays();
+    }
+    public Date getCurrentTime() {
+        return calendar.getTime();
     }
     //</editor-fold>
 
@@ -174,10 +224,34 @@ public class PanelCalendar extends JPanel {
         tmpCalendar.set(Calendar.DATE, tmpCalendar.get(Calendar.DATE) - 1);
         // Cargo los dias del mes
         for (int j = 1; j <= tmpCalendar.get(Calendar.DATE); j++) {
-            if(dia==dateSelected.get(Calendar.DAY_OF_YEAR)&&dateSelected.get(Calendar.YEAR)==tmpCalendar.get(Calendar.YEAR))
+            //si el dia es el seleccionado lo resalto
+            if(dia==dateSelected.get(Calendar.DAY_OF_YEAR)&&dateSelected.get(Calendar.YEAR)==tmpCalendar.get(Calendar.YEAR)) {
                 daysButtons[i].setSelected(true);
+                daysButtons[i].setFont(fontCalendar.deriveFont(Font.BOLD));
+                daysButtons[i].setBorder(javax.swing.BorderFactory.createLineBorder(Color.BLACK));
+            }
+            //si no es el seleccionado lo pinto como defecto
+            else {
+                daysButtons[i].setFont(fontCalendar);
+                daysButtons[i].setBorder(borderButton);
+            }
+            //pinto el boton
+            daysButtons[i].setForeground(new Color(51, 51, 51));
             daysButtons[i].setText(Integer.toString(j));
             daysButtons[i].setVisible(true);
+            //si hay dias seleccionados
+            if(days!=null) {
+                //recorro los dias
+                for(int k = 0; k<days.length; k++) {
+                    //pregunto si es el mismo dia
+                    if(j==days[k]) {
+                        //si el dia es un dia seleccionado lo pinto
+                        daysButtons[i].setForeground(Color.BLUE);
+                        daysButtons[i].setBorder(javax.swing.BorderFactory.createLineBorder(Color.BLUE));
+                    }
+                }
+            }
+            //agrego el dia al panel
             panelCalendar.add(daysButtons[i]);
             i++;
             dia++;
@@ -210,7 +284,9 @@ public class PanelCalendar extends JPanel {
     
     public static void main(String[] args) {
         JFrame frame = new JFrame("test");
+        int[] dias = new int[] {70,77,79,74};
         PanelCalendar a = new PanelCalendar();
+        a.setDateSelected(Calendar.getInstance().getTime(), dias);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.getContentPane().add(a);
         frame.pack();

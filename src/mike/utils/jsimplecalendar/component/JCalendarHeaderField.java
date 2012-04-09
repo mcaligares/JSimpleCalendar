@@ -2,6 +2,7 @@ package mike.utils.jsimplecalendar.component;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -22,9 +23,11 @@ public class JCalendarHeaderField extends JPanel{
     private static final long serialVersionUID = 6169821566686676341L;
     // Properties name
     public static final String PROPERTY_FIELD_NAME = "fieldName";
+    public static final String PROPERTY_NULLABLE = "nullable";
     // Properties
     private String fieldName;
     private boolean state;
+    private boolean nullable;
     private Color color;
     private Date date;
     
@@ -39,14 +42,15 @@ public class JCalendarHeaderField extends JPanel{
         date = null;
         
         txtCalendar = new JTextField();
+        txtCalendar.setFont(new Font("Dialog", 0, 11));
         txtCalendar.setPreferredSize(new Dimension(100, 20));
         txtCalendar.addKeyListener(keylistenerCalendar());
         
         btnCalendar = new JButton();
-        btnCalendar.setText(".");
-        btnCalendar.setMargin(new Insets(0, 0, 0, 0));
-        btnCalendar.setMaximumSize(new Dimension(30, 19));
-        btnCalendar.setMinimumSize(new Dimension(30, 19));
+        btnCalendar.setIcon(new ImageIcon(getClass().getResource("/mike/utils/jsimplecalendar/resources/JSimpleCalendarColor16.gif")));
+        btnCalendar.setMargin(new Insets(10, 4, 10, 4));
+        btnCalendar.setMaximumSize(new Dimension(20, 20));
+        btnCalendar.setMinimumSize(new Dimension(10, 20));
         btnCalendar.addActionListener(popupShow());
         
         jcalendar = new JCalendarHeader();
@@ -56,7 +60,7 @@ public class JCalendarHeaderField extends JPanel{
         popup.add(jcalendar);
         
         this.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-        this.setPreferredSize(new Dimension(100, 19));
+        this.setPreferredSize(new Dimension(130, 20));
         this.add(txtCalendar);
         this.add(btnCalendar);
     }
@@ -67,12 +71,27 @@ public class JCalendarHeaderField extends JPanel{
         this.fieldName = newValue;
         super.firePropertyChange(PROPERTY_FIELD_NAME, oldValue, newValue);
     }
+    public boolean getNullable() {return nullable;}
+    public void setNullable(boolean newValue){
+        boolean oldValue = nullable;
+        nullable = newValue;
+        super.firePropertyChange(PROPERTY_NULLABLE, oldValue, newValue);
+    }
     //</editor-fold>
     // GET DATE
     public Date getDate() throws CalendarFormatException {
         if(state) {
-            if(date!=null)
+            //si se puede permitir nulo
+            if(nullable)
+                //devuelvo la fecha
                 return date;
+            //si no se puede permitir nulo
+            else {
+                //pregunto si la fecha es distinto de nulo
+                if(date!=null)
+                    //devuelvo la fecha
+                    return date;
+            }
         }
         throw new CalendarFormatException(fieldName);
     }
@@ -100,12 +119,22 @@ public class JCalendarHeaderField extends JPanel{
         return new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent event) {
+                //obtengo el boton que se presiono
                 JToggleButton button = (JToggleButton) event.getSource();
+                //cambio el dia del calendar por el dia del boton
                 jcalendar.calendar.set(Calendar.DATE, Integer.parseInt(button.getText()));
                 jcalendar.dateSelected.setTime(jcalendar.calendar.getTime());
                 jcalendar.fireSelectionChange();
                 date = jcalendar.getDateSelected();
+                //lleno el campo con la fecha que se selecciono
                 txtCalendar.setText(new DateUtil().formatoDiaMesAnio(jcalendar.getDateSelected()));
+                //cambio de color si esta en rojo
+                if(txtCalendar.getForeground()==Color.RED)
+                    txtCalendar.setForeground(color);
+                //si el estado es falso lo cambio a true
+                if(!state)
+                    state = true;
+                //oculto el popup
                 popup.setVisible(false);
             }
         };
@@ -138,12 +167,25 @@ public class JCalendarHeaderField extends JPanel{
             else
                 throw new ParseException(fieldName, 0);
         }
-        catch (NumberFormatException | ParseException ex) {
+        catch (ParseException ex) {
+            txtCalendar.setForeground(Color.RED);
+            state = false;
+        }
+        catch (NumberFormatException ex) {
             txtCalendar.setForeground(Color.RED);
             state = false;
         }
     }
+    @Override
+    public void setToolTipText(String text) {
+        txtCalendar.setToolTipText(text);
+        super.setToolTipText(text);
+    }
+    public boolean isEmpty() {
+        return txtCalendar.getText().isEmpty();
+    }
     public static void main(String[] args) {
+        
         JFrame frame = new JFrame("JSimpleCalendarField");
         JCalendarHeaderField a = new JCalendarHeaderField();
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);

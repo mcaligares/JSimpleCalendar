@@ -9,6 +9,8 @@ import java.util.Calendar;
 import java.util.Date;
 import javax.swing.*;
 import mike.utils.DateUtil;
+import mike.utils.jsimplecalendar.event.DateChangedEvent;
+import mike.utils.jsimplecalendar.event.DateChangedListener;
 
 /**
  *
@@ -28,7 +30,7 @@ public class PanelCalendarHeader extends JPanel{
     
     public PanelCalendarHeader(PanelCalendar calendar) {
         this.jcalendar = calendar;
-        this.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
+//        this.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
         this.drawHead();
         this.add(prevYear);
         this.add(prevMonth);
@@ -39,56 +41,78 @@ public class PanelCalendarHeader extends JPanel{
     public void setCalendarHeader(Date date) {
         cabecera.setText(new DateUtil().formatoFullMesAnio(date));
     }
-    private ActionListener actionMonthYear() {
+    public ActionListener actionMonthYearChanged() {
         return new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent event) {
                 Calendar calend = (Calendar) jcalendar.calendar.clone();
-                JButton button = (JButton) event.getSource();
-                if(button == nextMonth)
+                JButton buttonSelected = (JButton) event.getSource();
+                int buttonType = -1;
+                if(buttonSelected == nextMonth) {
                     calend.add(Calendar.MONTH, 1);
-                if(button == nextYear)
+                    buttonType = 0;
+                }
+                if(buttonSelected == nextYear) {
                     calend.add(Calendar.YEAR, 1);
-                if(button==prevMonth)
+                    buttonType = 1;
+                }
+                if(buttonSelected==prevMonth) {
                     calend.add(Calendar.MONTH, -1);
-                if(button==prevYear)
+                    buttonType = 2;
+                }
+                if(buttonSelected==prevYear) {
                     calend.add(Calendar.YEAR, -1);
+                    buttonType = 3;
+                }
+                jcalendar.fireDateChange(buttonType);
                 cabecera.setText(new DateUtil().formatoFullMesAnio(calend.getTime()));
-                jcalendar.setCalendar(calend);
+                jcalendar.setCalendar(calend,jcalendar.days);
             }
         };
     }
 
     private void drawHead() {
-        Dimension dimension = new Dimension(15, 20);
+        Dimension dimension1 = new Dimension(17, 20);
+        Dimension dimension2 = new Dimension(30, 20);
         Insets inset = new Insets(0, 0, 0, 0);
         nextMonth = new JButton(">");
         nextMonth.setFont(fontCalendarHeader);
         nextMonth.setMargin(inset);
-        nextMonth.setPreferredSize(dimension);
-        nextMonth.addActionListener(actionMonthYear());
+        nextMonth.setPreferredSize(dimension1);
+        nextMonth.addActionListener(actionMonthYearChanged());
         
         prevMonth = new JButton("<");
         prevMonth.setFont(fontCalendarHeader);
         prevMonth.setMargin(inset);
-        prevMonth.setPreferredSize(dimension);
-        prevMonth.addActionListener(actionMonthYear());
+        prevMonth.setPreferredSize(dimension1);
+        prevMonth.addActionListener(actionMonthYearChanged());
         
         nextYear = new JButton(">>");
         nextYear.setFont(fontCalendarHeader);
         nextYear.setMargin(inset);
-        nextYear.setPreferredSize(dimension);
-        nextYear.addActionListener(actionMonthYear());
+        nextYear.setPreferredSize(dimension2);
+        nextYear.addActionListener(actionMonthYearChanged());
         
         prevYear = new JButton("<<");
         prevYear.setFont(fontCalendarHeader);
         prevYear.setMargin(inset);
-        prevYear.setPreferredSize(dimension);
-        prevYear.addActionListener(actionMonthYear());
+        prevYear.setPreferredSize(dimension2);
+        prevYear.addActionListener(actionMonthYearChanged());
         
         cabecera = new JLabel();
         cabecera.setMaximumSize(new Dimension(140, 20));
         cabecera.setHorizontalAlignment(SwingConstants.CENTER);
         cabecera.setText(new DateUtil().formatoFullMesAnio(jcalendar.calendar.getTime()));
+    }
+    
+    public static void main(String[] args) {
+        
+        JFrame frame = new JFrame("sadsda");
+        PanelCalendarHeader a = new PanelCalendarHeader(new PanelCalendar());
+        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        frame.getContentPane().add(a);
+        frame.pack();
+        frame.setVisible(true);
+        frame.setLocationRelativeTo(null);
     }
 }

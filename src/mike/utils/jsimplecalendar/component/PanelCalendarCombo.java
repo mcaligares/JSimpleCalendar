@@ -43,11 +43,32 @@ public class PanelCalendarCombo extends JPanel{
         this.add(year);
         this.add(yearCombo);
     }
+    /**
+     * Cambio la fecha del calendario
+     * @param date Date nueva fecha del calendario
+     */
     public void setDate(Date date) {
+        //Creo un nuevo calendario
         Calendar calend = Calendar.getInstance();
+        //cambio la fecha del calendario por la nueva fecha
         calend.setTime(date);
-        monthCombo.setSelectedIndex(calend.get(Calendar.MONTH));
-        yearCombo.setSelectedItem(calend.get(Calendar.YEAR));
+        
+        //algunas veces cuando se usa un skin al cargar un valor en el combo por
+        //item seleccionado (año) arroja un error de fuera de rango. Es poe eso
+        //que se pone en un try catch, en caso de error no se hace nada.
+        try{
+            //cambio la seleccion del combo del mes y año por la nueva fecha
+            monthCombo.setSelectedIndex(calend.get(Calendar.MONTH));
+            yearCombo.setSelectedItem(Integer.valueOf(calend.get(Calendar.YEAR)));
+        }
+        catch(Exception ex) {}
+//        int j = 0;
+//        for(int i=1950;i<3000;i++){
+//            if(i==calend.get(Calendar.YEAR))
+//                break;
+//            j++;
+//        }
+//        yearCombo.setSelectedIndex(j);
     }
     private ActionListener actionlistenerCalendar() {
         return new ActionListener() {

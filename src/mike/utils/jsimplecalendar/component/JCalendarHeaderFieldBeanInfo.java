@@ -12,7 +12,7 @@ import java.beans.SimpleBeanInfo;
  * @author mike
  */
 public class JCalendarHeaderFieldBeanInfo extends SimpleBeanInfo {
-    private static final String FILE = "/mike/utils/jsimplecalendarfield/resources/JSimpleCalendar%s.gif";
+    private static final String FILE = "/mike/utils/jsimplecalendar/resources/JSimpleCalendarField%s.gif";
     @Override
     public BeanDescriptor getBeanDescriptor() {
         BeanDescriptor bd = new BeanDescriptor(JCalendarHeader.class, null);

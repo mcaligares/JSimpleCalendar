@@ -4,9 +4,9 @@
  */
 package mike.utils.jsimplecalendar.component;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Insets;
 import java.awt.event.*;
 import java.text.ParseException;
@@ -45,14 +45,18 @@ public class JCalendarComboField extends JPanel {
         date = null;
         
         txtCalendar = new JTextField();
+        txtCalendar.setFont(new Font("Dialog", 0, 11));
         txtCalendar.setPreferredSize(new Dimension(100, 20));
         txtCalendar.addKeyListener(keylistenerCalendar());
         
         btnCalendar = new JToggleButton();
-        btnCalendar.setText(".");
-        btnCalendar.setMargin(new Insets(0, 0, 0, 0));
-        btnCalendar.setMaximumSize(new Dimension(30, 19));
-        btnCalendar.setMinimumSize(new Dimension(30, 19));
+        btnCalendar.setIcon(new ImageIcon(getClass().getResource("/mike/utils/jsimplecalendar/resources/JSimpleCalendarColor16.gif")));
+//        btnCalendar.setText(".");
+        btnCalendar.setMargin(new Insets(10, 4, 10, 4));
+        btnCalendar.setMaximumSize(new Dimension(20, 20));
+        btnCalendar.setMinimumSize(new Dimension(10, 20));
+        btnCalendar.setIconTextGap(0);
+//        btnCalendar.setPreferredSize(new Dimension(19, 19));
         btnCalendar.addActionListener(popupShow());
         
         jcalendar = new JCalendarCombo();
@@ -69,7 +73,7 @@ public class JCalendarComboField extends JPanel {
         popup.add(jcalendar);
         
         this.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-        this.setPreferredSize(new Dimension(100, 19));
+        this.setPreferredSize(new Dimension(130, 20));
         this.add(txtCalendar);
         this.add(btnCalendar);
     }
@@ -118,7 +122,7 @@ public class JCalendarComboField extends JPanel {
                 else {
                     // Muestro el popup
                     isVisiblePopup = true;
-                    popup.show(btnCalendar, btnCalendar.getX()-140, btnCalendar.getY()+30);
+                    popup.show(btnCalendar, btnCalendar.getX()-190, btnCalendar.getY()+25);
                 }
             }
         };
@@ -140,6 +144,12 @@ public class JCalendarComboField extends JPanel {
                 date = jcalendar.getDateSelected();
                 // Escribo la fecha con el formato en el campo de texto
                 txtCalendar.setText(new DateUtil().formatoDiaMesAnio(jcalendar.getDateSelected()));
+                //cambio de color si esta en rojo
+                if(txtCalendar.getForeground()==Color.RED)
+                    txtCalendar.setForeground(color);
+                //si el estado es falso lo cambio a true
+                if(!state)
+                    state = true;
                 // Oculto el popup
                 isVisiblePopup = false;
                 popup.setVisible(isVisiblePopup);
@@ -178,13 +188,25 @@ public class JCalendarComboField extends JPanel {
             else
                 throw new ParseException(fieldName, 0);
         }
-        catch (NumberFormatException | ParseException ex) {
+        catch (ParseException ex) {
+            // Si ocurre algun error cambiamos el color de la fuente a rojo y el estado a falso
+            txtCalendar.setForeground(Color.RED);
+            state = false;
+        }
+        catch (NumberFormatException ex) {
             // Si ocurre algun error cambiamos el color de la fuente a rojo y el estado a falso
             txtCalendar.setForeground(Color.RED);
             state = false;
         }
     }
-    
+    @Override
+    public void setToolTipText(String text) {
+        txtCalendar.setToolTipText(text);
+        super.setToolTipText(text);
+    }
+    public boolean isEmpty() {
+        return txtCalendar.getText().isEmpty();
+    }
     public static void main(String[] args) {
         JFrame frame = new JFrame("JSimpleCalendarComboField");
         JCalendarComboField a = new JCalendarComboField();
