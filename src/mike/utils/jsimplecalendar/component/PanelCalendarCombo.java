@@ -78,10 +78,14 @@ public class PanelCalendarCombo extends JPanel{
                 calend.setTime(calendar.getDateSelected());
                 calend.set(Calendar.DAY_OF_MONTH, 1);
                 JComboBox combo = (JComboBox) event.getSource();
-                if(combo==monthCombo)
+                if(combo==monthCombo) {
                     calend.set(Calendar.MONTH, combo.getSelectedIndex());
-                if(combo==yearCombo)
+                    calend.set(Calendar.YEAR, (Integer) yearCombo.getSelectedItem());
+                }
+                if(combo==yearCombo) {
                     calend.set(Calendar.YEAR, (Integer) combo.getSelectedItem());
+                    calend.set(Calendar.MONTH, monthCombo.getSelectedIndex());
+                }
                 calendar.setCalendar(calend);
             }
         };

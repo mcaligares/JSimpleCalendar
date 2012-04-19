@@ -202,7 +202,12 @@ public class DemoJSimpleCalendar extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-        // TODO add your handling code here:
+        try {
+            jTextField4.setText(new DateUtil().formatoDiaMesAnio(jCalendarComboField1.getDate()));
+        }
+        catch(CalendarFormatException ex) {
+            Logger.getLogger(DemoJSimpleCalendar.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }//GEN-LAST:event_jButton3ActionPerformed
 
     private void jCalendarHeader1NextMonthChanged(mike.utils.jsimplecalendar.event.DateChangedEvent evt) {//GEN-FIRST:event_jCalendarHeader1NextMonthChanged
